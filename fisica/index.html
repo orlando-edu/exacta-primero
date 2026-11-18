@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Librería KaTeX para renderizado matemático rápido -->
+<link rel="stylesheet" href="https://jsdelivr.net">
+<script defer src="https://jsdelivr.net"></script>
+<script defer src="https://jsdelivr.net"></script>
+
+    <title>Tutor Interactivo - Matriz de Examen</title>
+        <style>
+        /* ==========================================================================
+           HOJA DE ESTILOS NATIVA COMPLETA (INMUNE A BLOQUEOS DE INTERNET O CDN)
+           ========================================================================== */
+        * { box-sizing: border-box; }
+        body { 
+            background-color: #0f172a; 
+            color: #f8fafc; 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .hidden { display: none !important; }
+        
+        /* BARRA SUPERIOR (HEADER) */
+        header { 
+            background-color: #0b1329; 
+            border-bottom: 1px solid #1e293b; 
+            width: 100%; 
+            position: sticky; 
+            top: 0; 
+            z-index: 40; 
+        }
+        .header-container { 
+            max-width: 56rem; 
+            margin: 0 auto; 
+            padding: 0 1rem; 
+            height: 4rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        .header-brand { display: flex; align-items: center; gap: 0.75rem; }
+        .header-logo { 
+            background-color: rgba(79, 70, 229, 0.2); 
+            color: #818cf8; 
+            padding: 0.5rem 0.8rem; 
+            border-radius: 0.75rem; 
+            border: 1px solid rgba(99, 102, 241, 0.3); 
+            font-weight: 700; 
+            font-size: 1.25rem; 
+        }
+        .header-title { font-size: 1rem; font-weight: 700; color: #ffffff; margin: 0; }
+        .header-subtitle { font-size: 0.75rem; color: #94a3b8; margin: 0; }
+        
+        /* CONTENEDOR PRINCIPAL TOTALMENTE CENTRADO */
+        main { 
+            flex: 1; 
+            max-width: 56rem; 
+            width: 100%; 
+            margin: 0 auto; 
+            padding: 2rem 1rem; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+        }
+        
+        /* DISEÑO DE TARJETAS (SECTIONS) */
+        section { 
+            background-color: #1e293b; 
+            border: 1px solid #334155; 
+            border-radius: 1rem; 
+            padding: 1.5rem; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+            width: 100%;
+        }
+        @media (min-width: 768px) { section { padding: 2rem; } }
+        
+        .section-header { border-bottom: 1px solid #334155; padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .section-title { font-size: 1.25rem; font-weight: 700; color: #ffffff; margin: 0; }
+        @media (min-width: 768px) { .section-title { font-size: 1.5rem; } }
+        .section-desc { font-size: 0.875rem; color: #94a3b8; margin: 0.25rem 0 0 0; }
+        
+        /* COORDENADAS DE LA GRILLA RESPONSIVA */
+        .grid-layout { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (min-width: 768px) { .grid-layout { grid-template-columns: 1fr 1fr; } }
+        
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .input-label { font-size: 0.875rem; font-weight: 500; color: #cbd5e1; }
+        
+        select { 
+            width: 100%; 
+            background-color: #020617; 
+            border: 1px solid #334155; 
+            color: #e2e8f0; 
+            padding: 0.75rem 1rem; 
+            font-size: 1rem; 
+            border-radius: 0.75rem; 
+            outline: none; 
+            transition: border-color 0.2s; 
+        }
+        select:focus { border-color: #6366f1; }
+        
+        /* BARRA DE PROGRESO Y CONTADORES */
+        .quiz-meta-flex { display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; font-weight: 500; margin-bottom: 0.25rem; }
+        .progress-container { width: 100%; background-color: #020617; height: 0.625rem; border-radius: 9999px; overflow: hidden; border: 1px solid #334155; margin-bottom: 1.5rem; }
+        #progress-bar { height: 100%; width: 0%; background: linear-gradient(to right, #6366f1, #a855f7); transition: width 0.3s; }
+        
+        /* CONTENEDOR DE OPCIONES DINÁMICAS (PANTALLA 2) */
+        #quiz-options { display: flex; flex-direction: column; gap: 0.75rem; margin: 1.5rem 0; }
+        #quiz-options button {
+            width: 100%;
+            text-align: left;
+            background-color: #020617;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #quiz-options button:hover:not(:disabled) { background-color: #1e293b; color: #ffffff; border-color: #6366f1; }
+        
+        /* ETIQUETAS DE TEXTO Y BADGES */
+        .badge { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.625rem; border-radius: 0.375rem; border: 1px solid transparent; }
+        .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+        .bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); }
+        .bg-rose-500\/10 { background-color: rgba(244, 63, 94, 0.1); color: #f87171; border-color: rgba(244, 63, 94, 0.2); }
+        
+        .timer-box { background-color: #020617; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 0.75rem; color: #fbbf24; font-family: monospace; font-size: 1.125rem; font-weight: 700; }
+        
+        /* RETROALIMENTACIÓN DEL TUTOR */
+        #quiz-feedback { border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; background-color: rgba(2, 6, 23, 0.5); margin-bottom: 1.5rem; }
+        .border-green-500 { border-color: rgba(16, 185, 129, 0.4) !important; color: #34d399 !important; }
+        .border-red-500 { border-color: rgba(244, 63, 94, 0.4) !important; color: #f87171 !important; }
+        .feedback-text-box { font-size: 0.875rem; color: #cbd5e1; border-left: 2px solid #475569; padding-left: 0.75rem; margin-top: 0.5rem; }
+        
+        /* BOTONES DE CONTROL */
+        .flex-actions { display: flex; justify-content: space-between; align-items: center; pt-4; gap: 1rem; }
+        #btn-start, #btn-restart { 
+            width: 100%; background-color: #4f46e5; color: #ffffff; font-weight: 700; padding: 1rem; font-size: 1.125rem; border: none; border-radius: 0.75rem; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+        #btn-start:hover, #btn-restart:hover { background-color: #6366f1; }
+        
+        #btn-home, #btn-next { font-weight: 700; padding: 0.75rem 1.5rem; border: none; border-radius: 0.75rem; cursor: pointer; transition: background-color 0.2s; text-align: center; }
+        #btn-home { background-color: #334155; color: #e2e8f0; }
+        #btn-home:hover { background-color: #475569; }
+        #btn-next { background-color: #4f46e5; color: #ffffff; }
+        #btn-next:disabled { background-color: #334155; color: #64748b; cursor: not-allowed; }
+        #btn-close-exam { background: none; border: none; color: #94a3b8; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: color 0.2s; }
+        #btn-close-exam:hover { color: #f87171; }
+        
+        /* DIAGNÓSTICO EN RESULTADOS (PANTALLA 3) */
+        .metrics-card { background-color: #020617; border: 1px solid #334155; padding: 1rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.875rem; }
+        .diagnostic-box { background-color: rgba(2, 6, 23, 0.6); border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; margin-top: 1rem; }
+        .diagnostic-row { display: flex; justify-content: space-between; font-size: 0.875rem; margin-top: 0.5rem; }
+        
+        /* GRÁFICO CIRCULAR SVG */
+        .svg-center { display: flex; justify-content: center; align-items: center; position: relative; margin: 0 auto 1.5rem auto; }
+        .text-overlay { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+        
+        /* FOOTER */
+        footer { border-top: 1px solid #1e293b; background-color: #020617; padding: 1rem 0; text-align: center; font-size: 0.75rem; color: #64748b; width: 100%; margin-top: auto; }
+        
+        /* ANIMACIÓN DE ALERTA */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+
+</head>
+<body>
+
+    <!-- TOP BAR / HEADER NATIVO -->
+    <header>
+        <div class="header-container">
+            <div class="header-brand">
+                <div class="header-logo">∑</div>
+                <div>
+                    <h1 class="header-title">Tutor de Física</h1>
+                    <p class="header-subtitle">1º Año Secundaria • Matriz Base</p>
+                </div>
+            </div>
+            
+        </div>
+    </header>
+
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 flex flex-col justify-center">
+        
+        <!-- PANTALLA 1: CONFIGURACIÓN -->
+        <section id="screen-setup" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+            <div class="border-b border-slate-800 pb-4 mb-4">
+                <h2 class="text-xl md:text-2xl font-bold text-white">⚙️ Configurar Simulador</h2>
+                <p class="text-sm text-slate-400 mt-1">Selecciona los parámetros para iniciar tu sesión de tutoría asistida.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Seleccionar Unidades</label>
+                    <select id="setup-unit" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 transition"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Cantidad de Preguntas</label>
+                    <select id="setup-count" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 transition">
+                        <option value="5">5 Preguntas (Rápido)</option>
+                        <option value="10">10 Preguntas (Estándar)</option>
+                        <option value="20">20 Preguntas (Intensivo)</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btn-start" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition text-lg shadow-lg">
+                Comenzar Examen ➔
+            </button>
+        </section>
+
+        <!-- PANTALLA 2: INTERFAZ ACTIVA DEL EXAMEN -->
+        <section id="screen-quiz" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span id="quiz-badge-unit" class="text-xs font-semibold bg-slate-800 text-indigo-400 px-2.5 py-1 rounded-md border border-slate-700">Unidad</span>
+                        <span id="quiz-badge-difficulty" class="text-xs font-semibold px-2.5 py-1 rounded-md border">Dificultad</span>
+                    </div>
+                    <h3 id="quiz-category" class="text-sm font-medium text-slate-400">Categoría</h3>
+                </div>
+                <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-amber-400 font-mono text-lg font-bold">
+                    ⏱️ <span id="quiz-timer">00:00</span>
+                </div>
+            </div>
+
+<!-- CONTENEDOR DE LA BARRA DE PROGRESO (VISIBILIDAD FORZADA) -->
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.825rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.375rem;">
+                    <span id="progress-text">Pregunta 1 de X</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div style="width: 100%; background-color: #020617; height: 0.75rem; border-radius: 9999px; overflow: hidden; border: 1px solid #334155;">
+                    <div id="progress-bar" style="height: 100%; width: 0%; background: linear-gradient(to right, #6366f1, #a855f7); transition: width 0.3s ease-out; border-radius: 9999px;"></div>
+                </div>
+            </div>
+
+            <div class="space-y-1 mb-4">
+                <div class="flex justify-between text-xs text-slate-400 font-medium">
+                    <span id="progress-text">Pregunta 1 de X</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                    <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+            <div class="space-y-4 mb-6">
+                <h2 id="quiz-question" class="text-lg md:text-xl font-bold text-white leading-snug mb-4">Cargando pregunta...</h2>
+                <div id="quiz-options" class="grid grid-cols-1 gap-3"></div>
+            </div>
+            <div id="quiz-feedback" class="hidden border rounded-xl p-4 bg-slate-950/50 space-y-2 mb-4">
+                <div class="font-bold text-sm" id="feedback-status"></div>
+                <div class="text-sm text-slate-300 border-l-2 border-slate-700 pl-3 py-1">
+                    <p id="feedback-theory" class="mb-1"></p>
+                    <p id="feedback-example" class="text-xs text-slate-400 font-mono m-0"></p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                <button id="btn-close-exam" class="text-slate-400 hover:text-rose-400 font-semibold text-sm transition">✕ Abandonar</button>
+                <button id="btn-next" disabled class="bg-slate-800 text-slate-500 font-bold px-6 py-3 rounded-xl transition flex items-center gap-2">Siguiente →</button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: RESULTADOS GRÁFICOS (COMPACTO Y PROPORCIONADO) -->
+        <section id="screen-results" class="hidden" style="background-color: #1e293b; border: 1px solid #334155; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); width: 100%;">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 800; color: #ffffff; margin: 0;">Evaluación Finalizada</h2>
+                <p style="font-size: 0.875rem; color: #94a3b8; margin: 0.25rem 0 0 0;">Resumen global del rendimiento académico obtenido.</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: center;">
+                <!-- Forzado de dimensiones estrictas de 12rem para el gráfico circular SVG -->
+                <div style="display: flex; justify-content: center; align-items: center; position: relative; margin: 0 auto; width: 12rem; height: 12rem;">
+                    <svg style="width: 100%; height: 100%; transform: rotate(-90deg);" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" stroke="#020617" stroke-width="8" fill="transparent" />
+                        <circle id="svg-progress-ring" cx="50" cy="50" r="40" stroke="#10b981" stroke-width="8" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" style="transition: all 1s ease-out;" />
+                    </svg>
+                    <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+                        <span id="result-score-percent" style="font-size: 2.25rem; font-weight: 900; color: #ffffff;">0%</span>
+                        <span style="font-size: 0.75rem; color: #818cf8; font-weight: 700; text-transform: uppercase; tracking: 0.05em; margin-top: 0.25rem;">Aciertos</span>
+                    </div>
+                </div>
+
+                <!-- Bloque de Tarjetas Numéricas y Diagnóstico -->
+                <div style="width: 100%;">
+                    <div style="background-color: #020617; border: 1px solid #334155; padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <span style="color: #94a3b8; font-weight: 500;">Respuestas Correctas</span>
+                        <span id="metric-correct" style="font-weight: 700; color: #34d399;">0</span>
+                    </div>
+                    <div style="background-color: #020617; border: 1px solid #334155; padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <span style="color: #94a3b8; font-weight: 500;">Respuestas Incorrectas</span>
+                        <span id="metric-incorrect" style="font-weight: 700; color: #f87171;">0</span>
+                    </div>
+                    <div style="background-color: #020617; border: 1px solid #334155; padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <span style="color: #94a3b8; font-weight: 500;">Tiempo Transcurrido</span>
+                        <span id="metric-time" style="font-weight: 700; color: #fbbf24; font-family: monospace;">00:00</span>
+                    </div>
+
+                    <div style="background-color: rgba(2, 6, 23, 0.6); border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; margin-top: 1rem;">
+                        <h4 style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin: 0 0 0.5rem 0;">Diagnóstico por Nivel</h4>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-top: 0.375rem;"><span style="color: #34d399;">🟢 Fácil</span><span id="performance-easy" style="font-weight: 700; color: #e2e8f0;">--</span></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-top: 0.375rem;"><span style="color: #fbbf24;">🟡 Medio</span><span id="performance-medium" style="font-weight: 700; color: #e2e8f0;">--</span></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-top: 0.375rem;"><span style="color: #f87171;">🔴 Difícil</span><span id="performance-hard" style="font-weight: 700; color: #e2e8f0;">--</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; padding-top: 1rem; border-t: 1px solid #334155; margin-top: 1.5rem;">
+                <button id="btn-restart" style="width: 100%; background-color: #4f46e5; color: #ffffff; font-weight: 700; padding: 0.875rem; font-size: 1rem; border: none; border-radius: 0.75rem; cursor: pointer; transition: background-color 0.2s;">🔄 Reintentar Examen</button>
+                <button id="btn-home" style="width: 100%; background-color: #334155; color: #e2e8f0; font-weight: 700; padding: 0.875rem; font-size: 1rem; border: none; border-radius: 0.75rem; cursor: pointer; transition: background-color 0.2s;">🏠 Configuración</button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
+        Motor de Simulación Educativa • Arquitectura Clonable Multi-Materia © 2026
+    </footer>
+
+    <!-- INTERRUPTOR DE LOGICA: MOTOR DEL SIMULADOR -->
+    <script>
+        let dbPreguntas = [];
+        let preguntasFiltradas = [];
+        let indiceActual = 0;
+        let respuestasUsuario = [];
+        let tiempoSegundos = 0;
+        let tiempoPorPregunta = 0;
+        let intervaloTemporizador = null;
+
+        const sSetup = document.getElementById('screen-setup');
+        const sQuiz = document.getElementById('screen-quiz');
+        const sResults = document.getElementById('screen-results');
+
+        async function cargarDatos() {
+            try {
+                console.log("Intentando leer preguntas.json...");
+                const response = await fetch('preguntas.json');
+                if (!response.ok) throw new Error("Error HTTP: " + response.status);
+                dbPreguntas = await response.json();
+                console.log("Preguntas cargadas con éxito:", dbPreguntas);
+                inicializarFiltros();
+            } catch (error) {
+                console.error("Error cargando el banco de preguntas:", error);
+                alert("No se pudo cargar el archivo 'preguntas.json'. Verifica su ubicación.");
+            }
+        }
+
+                      function inicializarFiltros() {
+            const selectUnidad = document.getElementById('setup-unit');
+            const selectCount = document.getElementById('setup-count');
+            
+            const totalDisponibles = dbPreguntas.length;
+            console.log("Total de preguntas detectadas en el sistema:", totalDisponibles);
+
+            let infoTxt = document.getElementById('db-info-text');
+            if (!infoTxt) {
+                infoTxt = document.createElement('p');
+                infoTxt.id = 'db-info-text';
+                infoTxt.style.fontSize = '0.825rem';
+                infoTxt.style.color = '#818cf8';
+                infoTxt.style.fontWeight = '600';
+                infoTxt.style.marginTop = '0.5rem';
+                infoTxt.style.textAlign = 'center';
+                const btnStart = document.getElementById('btn-start');
+                if (btnStart && btnStart.parentNode) {
+                    btnStart.parentNode.insertBefore(infoTxt, btnStart);
+                }
+            }
+            if (infoTxt) {
+                infoTxt.textContent = "📊 Banco de datos activo: " + totalDisponibles + " preguntas disponibles para evaluar.";
+            }
+
+            const unidadesUnicas = [...new Set(dbPreguntas.map(p => p.unidad || "Unidad 1: Números y Operaciones"))];
+            selectUnidad.innerHTML = '<option value="all">Todas las Unidades (Programa Completo)</option>';
+            unidadesUnicas.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.textContent = u;
+                selectUnidad.appendChild(opt);
+            });
+
+            selectCount.innerHTML = ''; 
+            
+            // CORREGIDO: Lista explícita de números enteros estables
+            const opcionesBase = [5, 10, 20, 30, 40, 50, 100, 200, 300];
+            opcionesBase.forEach(num => {
+                if (num <= totalDisponibles) {
+                    const opt = document.createElement('option');
+                    opt.value = num;
+                    opt.textContent = num + " Preguntas";
+                    selectCount.appendChild(opt);
+                }
+            });
+
+            const optMax = document.createElement('option');
+            optMax.value = totalDisponibles;
+            optMax.textContent = "Examen Completo (" + totalDisponibles + " preg.)";
+            selectCount.appendChild(optMax);
+        }
+
+        function iniciarTemporizador() {
+            tiempoSegundos = 0;
+            tiempoPorPregunta = 0;
+            clearInterval(intervaloTemporizador);
+            const timerContainer = document.getElementById('quiz-timer').parentElement;
+
+            intervaloTemporizador = setInterval(() => {
+                tiempoSegundos++;
+                tiempoPorPregunta++;
+                const mins = String(Math.floor(tiempoSegundos / 60)).padStart(2, '0');
+                const secs = String(tiempoSegundos % 60).padStart(2, '0');
+                document.getElementById('quiz-timer').textContent = mins + ":" + secs;
+
+                const preguntaActiva = preguntasFiltradas[indiceActual];
+                if (preguntaActiva && (preguntaActiva.dificultad === 'Difícil' || preguntaActiva.dificultad === 'Alto') && tiempoPorPregunta > 45) {
+                    timerContainer.className = "flex items-center gap-2 bg-rose-950/40 border border-rose-500/40 text-rose-400 font-mono text-lg font-bold animate-pulse px-4 py-2 rounded-xl";
+                }
+            }, 1000);
+        }
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            const unidadSeleccionada = document.getElementById('setup-unit').value;
+            const cantidadMax = parseInt(document.getElementById('setup-count').value);
+
+            let baseFiltrada = unidadSeleccionada === 'all' 
+                ? [...dbPreguntas] 
+                : dbPreguntas.filter(p => p.unidad === unidadSeleccionada);
+
+            if (baseFiltrada.length === 0) baseFiltrada = [...dbPreguntas];
+
+            baseFiltrada.sort(() => Math.random() - 0.5);
+            preguntasFiltradas = baseFiltrada.slice(0, cantidadMax);
+
+            if (preguntasFiltradas.length === 0) {
+                alert("No se encontraron preguntas.");
+                return;
+            }
+
+            indiceActual = 0;
+            respuestasUsuario = [];
+            
+            sSetup.classList.add('hidden');
+            sResults.classList.add('hidden');
+            sQuiz.classList.remove('hidden');
+
+            iniciarTemporizador();
+            mostrarPregunta();
+        });
+
+function renderizarMatematica(elemento) {
+    if (typeof renderMathInElement === 'function' && elemento) {
+        renderMathInElement(elemento, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },  // Fórmulas centradas en bloque
+                { left: '$', right: '$', display: false }    // Fórmulas dentro del texto
+            ],
+            throwOnError: false // Evita que una fórmula mal escrita rompa el simulador
+        });
+    }
+}
+
+
+                function mostrarPregunta() {
+            tiempoPorPregunta = 0;
+            const timerContainer = document.getElementById('quiz-timer').parentElement;
+            timerContainer.className = "bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-amber-400 font-mono text-lg font-bold flex items-center gap-2";
+
+            const item = preguntasFiltradas[indiceActual];
+            const btnNext = document.getElementById('btn-next');
+            if (!item) return;
+
+            document.getElementById('quiz-badge-unit').textContent = item.unidad || "Unidad General";
+            document.getElementById('quiz-badge-difficulty').textContent = item.dificultad || "Medio";
+            document.getElementById('quiz-category').textContent = item.categoria || "Matemáticas";
+            document.getElementById('quiz-question').textContent = item.pregunta;
+
+            const bDiff = document.getElementById('quiz-badge-difficulty');
+            bDiff.className = "text-xs font-semibold px-2.5 py-1 rounded-md border ";
+            if (item.dificultad === 'Fácil') bDiff.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+            else if (item.dificultad === 'Difícil') bDiff.classList.add('bg-rose-500/10', 'text-rose-400', 'border-rose-500/20');
+            else bDiff.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
+
+            const total = preguntasFiltradas.length;
+            const pct = Math.round((indiceActual / total) * 100);
+            document.getElementById('progress-text').textContent = "Pregunta " + (indiceActual + 1) + " de " + total;
+            document.getElementById('progress-percent').textContent = pct + "%";
+            document.getElementById('progress-bar').style.width = pct + "%";
+
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            btnNext.disabled = true;
+            btnNext.className = "bg-slate-800 text-slate-500 font-bold px-6 py-3 rounded-xl cursor-not-allowed";
+            btnNext.innerHTML = "Siguiente →";
+
+            // --- ALGORITMO DE MEZCLA ALEATORIA AL VUELO ---
+            let opcionesOriginales = item.opciones;
+            if (!opcionesOriginales || !Array.isArray(opcionesOriginales) || opcionesOriginales.length === 0) {
+                opcionesOriginales = [
+                    item.respuesta_resumida || "La afirmación matemática planteada es correcta.",
+                    "La afirmación presenta inconsistencias o es incorrecta."
+                ];
+                item.correcta = 0;
+            }
+
+            // Crear un mapa de objetos con el texto y su índice original
+            let mapeoOpciones = opcionesOriginales.map((texto, idx) => {
+                return { texto: texto, esLaCorrecta: idx === item.correcta };
+            });
+
+            // Desordenar el mapa de opciones usando el Algoritmo Fisher-Yates
+            for (let i = mapeoOpciones.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [mapeoOpciones[i], mapeoOpciones[j]] = [mapeoOpciones[j], mapeoOpciones[i]];
+            }
+
+            // Identificar en qué posición quedó la respuesta correcta en este examen particular
+            item.correctaDinamica = mapeoOpciones.findIndex(opc => opc.esLaCorrecta);
+
+            // Renderizar las opciones desordenadas en la pantalla
+            const contenedorOpciones = document.getElementById('quiz-options');
+            contenedorOpciones.innerHTML = '';
+
+            mapeoOpciones.forEach((opcion, index) => {
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = "w-full text-left bg-slate-950 hover:bg-slate-800/50 border border-slate-800 text-slate-300 hover:text-white px-5 py-4 rounded-xl font-medium transition duration-200 flex items-center justify-between group";
+                btn.innerHTML = "<span>" + opcion.texto + "</span> <div class='w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center group-hover:border-indigo-500 transition-colors'><div class='w-2.5 h-2.5 rounded-full bg-transparent'></div></div>";
+                btn.addEventListener('click', () => evaluarRespuesta(index, btn));
+                contenedorOpciones.appendChild(btn);
+            });
+        }
+
+renderizarMatematica(sQuiz);
+
+
+               function evaluarRespuesta(indiceSeleccionado, botonPresionado) {
+            const item = preguntasFiltradas[indiceActual];
+            const opcionesBotones = document.getElementById('quiz-options').children;
+
+            for (let btn of opcionesBotones) {
+                btn.disabled = true;
+                btn.classList.add('opacity-60', 'cursor-not-allowed');
+            }
+            botonPresionado.classList.remove('opacity-60');
+
+            // Usar el índice dinámico recalculado por la mezcla aleatoria
+            const indiceCorrectoReal = item.hasOwnProperty('correctaDinamica') ? item.correctaDinamica : item.correcta;
+            const esCorrecto = indiceSeleccionado === indiceCorrectoReal;
+            
+            respuestasUsuario.push({ esCorrecto: esCorrecto, dificultad: item.dificultad || "Medio" });
+
+            const indicadorInterno = botonPresionado.querySelector('div');
+            if (esCorrecto) {
+                botonPresionado.classList.add('border-emerald-500/40', 'bg-emerald-500/10', 'text-emerald-400');
+                if(indicadorInterno) { indicadorInterno.className = "w-5 h-5 rounded-full border-emerald-500 bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-xs"; indicadorInterno.innerHTML = "✓"; }
+            } else {
+                botonPresionado.classList.add('border-rose-500/40', 'bg-rose-500/10', 'text-rose-400');
+                if(indicadorInterno) { indicadorInterno.className = "w-5 h-5 rounded-full border-rose-500 bg-rose-500 flex items-center justify-center text-slate-950 font-black text-xs"; indicadorInterno.innerHTML = "✕"; }
+                
+                const botonCorrecto = opcionesBotones[indiceCorrectoReal];
+                if (botonCorrecto) {
+                    botonCorrecto.classList.remove('opacity-60');
+                    botonCorrecto.classList.add('border-emerald-500/30', 'text-emerald-500/80');
+                }
+            }
+
+
+            const fdbContainer = document.getElementById('quiz-feedback');
+            const fdbStatus = document.getElementById('feedback-status');
+
+            fdbContainer.className = "border rounded-xl p-4 bg-gray-950 bg-opacity-50 space-y-2 " + (esCorrecto ? "border-green-500 border-opacity-30 text-green-400" : "border-red-500 border-opacity-30 text-red-400");
+            fdbStatus.innerHTML = esCorrecto ? "✓ ¡Excelente! Respuesta Correcta." : "✕ Aprendamos del error:";
+
+            document.getElementById('feedback-theory').textContent = item.respuesta_ampliada?.teoria || item.respuesta_resumida || "Revisión conceptual.";
+            document.getElementById('feedback-example').textContent = item.respuesta_ampliada?.ejemplo ? "Ejemplo: " + item.respuesta_ampliada.ejemplo : "";
+            fdbContainer.classList.remove('hidden');
+
+renderizarMatematica(fdbContainer);
+
+
+            const btnNext = document.getElementById('btn-next');
+            btnNext.disabled = false;
+            btnNext.className = "bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer";
+
+            if (indiceActual + 1 === preguntasFiltradas.length) {
+                btnNext.innerHTML = "Finalizar Examen ✓";
+            } else {
+                btnNext.innerHTML = "Siguiente →";
+            }
+        }
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            if (indiceActual + 1 < preguntasFiltradas.length) {
+                indiceActual++;
+                mostrarPregunta();
+            } else {
+                finalizarExamen();
+            }
+        });
+
+        function salirDeExamen() {
+            if (confirm("¿Deseas abandonar el examen activo?")) {
+                clearInterval(intervaloTemporizador);
+                sQuiz.classList.add('hidden');
+                sResults.classList.add('hidden');
+                sSetup.classList.remove('hidden');
+            }
+        }
+        document.getElementById('btn-close-exam').addEventListener('click', salirDeExamen);
+
+        function finalizarExamen() {
+            clearInterval(intervaloTemporizador);
+            sQuiz.classList.add('hidden');
+            sResults.classList.remove('hidden');
+
+            const correctas = respuestasUsuario.filter(r => r.esCorrecto).length;
+            const incorrectas = respuestasUsuario.length - correctas;
+            const totalPreguntas = respuestasUsuario.length;
+            const porcentajeGlobal = totalPreguntas > 0 ? Math.round((correctas / totalPreguntas) * 100) : 0;
+
+            document.getElementById('result-score-percent').textContent = porcentajeGlobal + "%";
+            document.getElementById('metric-correct').textContent = correctas;
+            document.getElementById('metric-incorrect').textContent = incorrectas;
+
+            const mins = String(Math.floor(tiempoSegundos / 60)).padStart(2, '0');
+            const secs = String(tiempoSegundos % 60).padStart(2, '0');
+            document.getElementById('metric-time').textContent = mins + ":" + secs;
+
+            const calcularEfectividad = (nivel) => {
+                const preguntasDelNivel = respuestasUsuario.filter(r => r.dificultad === nivel);
+                if (preguntasDelNivel.length === 0) return "N/A";
+                const correctasDelNivel = preguntasDelNivel.filter(r => r.esCorrecto).length;
+                return Math.round((correctasDelNivel / preguntasDelNivel.length) * 100) + "%";
+            };
+
+            document.getElementById('performance-easy').textContent = calcularEfectividad('Fácil');
+            document.getElementById('performance-medium').textContent = calcularEfectividad('Medio');
+            document.getElementById('performance-hard').textContent = calcularEfectividad('Difícil');
+
+            const ring = document.getElementById('svg-progress-ring');
+            if (ring) {
+                const circunferencia = 251.2;
+                const offset = circunferencia - (porcentajeGlobal / 100) * circunferencia;
+                ring.setAttribute('stroke', porcentajeGlobal >= 70 ? '#10b981' : (porcentajeGlobal >= 40 ? '#f59e0b' : '#f43f5e'));
+                setTimeout(() => { ring.style.strokeDashoffset = offset; }, 150);
+            }
+        }
+
+        document.getElementById('btn-restart').addEventListener('click', () => document.getElementById('btn-start').click());
+        document.getElementById('btn-home').addEventListener('click', () => {
+            sResults.classList.add('hidden');
+            sSetup.classList.remove('hidden');
+            inicializarFiltros();
+        });
+
+        cargarDatos();
+    </script>
+</body>
+</html>
+
