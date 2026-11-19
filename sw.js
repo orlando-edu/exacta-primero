@@ -1,4 +1,4 @@
-const CACHE_NAME = 'exactas-pack1-v2';
+const CACHE_NAME = 'exactas-pack1-v3';
 
 // Lista completa de archivos estáticos para uso 100% offline desde el inicio
 const ASSETS_TO_CACHE = [
