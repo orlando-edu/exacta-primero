@@ -229,10 +229,10 @@
             <span>⚛️ EXACTAS</span>
             <span class="badge">Pack 1º Año</span>
         </div>
-<button id="btnInstalarPWA" class="btn-instalar">📲 Instalar App en el Dispositivo</button>
+        <!-- Oculto por defecto (display: none) hasta que el navegador confirme que se puede instalar -->
+        <button id="btnInstalarPWA" class="btn-instalar" style="display: none;">📲 Instalar App en el Dispositivo</button>
 
         <nav class="tabs">
-            <!-- Cambia la ruta en data-url por la ubicación real de cada app -->
             <button class="tab-btn active" data-subject="mate" data-url="matematicas/index.html">
                 📐 Matemáticas
             </button>
@@ -245,46 +245,99 @@
         </nav>
     </header>
 
-    <main>
+    <main style="position: relative;">
+        <!-- Pantalla de carga visual sobre el iframe -->
+        <div id="loader-materia" style="display: none; position: absolute; inset: 0; background: #0f172a; color: #f8fafc; flex-direction: column; align-items: center; justify-content: center; z-index: 50; gap: 12px; font-family: sans-serif;">
+            <div style="width: 42px; height: 42px; border: 4px solid #334155; border-top-color: #6366f1; border-radius: 50%; animation: girarLoader 0.8s linear infinite;"></div>
+            <p id="loader-texto" style="font-size: 1.1rem; font-weight: 600; margin: 0;">Cargando materia...</p>
+            <span style="font-size: 0.85rem; color: #94a3b8;">Preparando banco de preguntas</span>
+        </div>
+
         <!-- Carga por defecto la primera aplicación -->
         <iframe id="app-frame" src="matematicas/index.html" title="Visor de Materia"></iframe>
     </main>
 
+    <style>
+        @keyframes girarLoader {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
     <script>
         const buttons = document.querySelectorAll('.tab-btn');
         const iframe = document.getElementById('app-frame');
+        const loader = document.getElementById('loader-materia');
+        const loaderTexto = document.getElementById('loader-texto');
+
+        // Función para mostrar el cartel de carga al cambiar de materia
+        function mostrarCarga(nombreMateria) {
+            loaderTexto.textContent = `Cargando ${nombreMateria}...`;
+            loader.style.display = 'flex';
+        }
+
+        // Ocultar el cartel cuando el iframe termine de cargar (con un mínimo de 600ms para que se aprecie)
+        let tiempoInicioCarga = 0;
+        iframe.addEventListener('load', () => {
+            const transcurrido = Date.now() - tiempoInicioCarga;
+            const esperaRestante = Math.max(0, 600 - transcurrido);
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, esperaRestante);
+        });
 
         buttons.forEach(button => {
             button.addEventListener('click', () => {
+                // Evitar recargar si ya está en esa pestaña
+                if (button.classList.contains('active')) return;
+
                 // 1. Quitar la clase 'active' de todas las pestañas
                 buttons.forEach(btn => btn.classList.remove('active'));
                 
                 // 2. Activar la pestaña seleccionada
                 button.classList.add('active');
                 
-                // 3. Cargar la URL de la aplicación correspondiente en el visor
+                // 3. Mostrar pantalla de carga y actualizar el iframe
+                const nombreMateria = button.textContent.trim();
+                tiempoInicioCarga = Date.now();
+                mostrarCarga(nombreMateria);
+
                 const targetUrl = button.getAttribute('data-url');
                 iframe.src = targetUrl;
             });
         });
 
- let diferidoInstalacion;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      diferidoInstalacion = e;
-      const btn = document.getElementById('btnInstalarPWA');
-      if (btn) {
-        btn.style.display = 'inline-block';
-        btn.addEventListener('click', async () => {
-          btn.style.display = 'none';
-          if (diferidoInstalacion) {
-            diferidoInstalacion.prompt();
-            diferidoInstalacion = null;
-          }
-        });
-      }
-    });
+        // --- LÓGICA DEL BOTÓN INSTALAR PWA ---
+        let diferidoInstalacion;
+        const btnInstalar = document.getElementById('btnInstalarPWA');
 
+        // Verificar si ya se está ejecutando como App instalada
+        const estaInstalada = window.matchMedia('(display-mode: standalone)').matches 
+                              || window.navigator.standalone === true;
+
+        if (!estaInstalada && btnInstalar) {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                diferidoInstalacion = e;
+                btnInstalar.style.display = 'inline-block';
+            });
+
+            btnInstalar.addEventListener('click', async () => {
+                if (!diferidoInstalacion) return;
+                diferidoInstalacion.prompt();
+                const { outcome } = await diferidoInstalacion.userChoice;
+                if (outcome === 'accepted') {
+                    btnInstalar.style.display = 'none';
+                }
+                diferidoInstalacion = null;
+            });
+        }
+
+        // Ocultar definitivamente cuando se complete la instalación
+        window.addEventListener('appinstalled', () => {
+            diferidoInstalacion = null;
+            if (btnInstalar) btnInstalar.style.display = 'none';
+        });
     </script>
 </body>
+
 </html>

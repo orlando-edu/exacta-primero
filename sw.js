@@ -1,51 +1,67 @@
-const CACHE_NAME = 'exactas-pack 1º Año';
-// Lista de archivos locales estáticos que se guardarán en la memoria del dispositivo
+const CACHE_NAME = 'exactas-pack1-v2';
+
+// Lista completa de archivos estáticos para uso 100% offline desde el inicio
 const ASSETS_TO_CACHE = [
-  'index.html',
-  'preguntas.json',
-  'manifest.json'
+  './',
+  './index.html',
+  './manifest.json',
+  './matematicas/index.html',
+  './matematicas/preguntas.json',
+  './fisica/index.html',
+  './fisica/preguntas.json',
+  './quimica/index.html',
+  './quimica/preguntas.json'
 ];
 
-// Evento de Instalación: Guarda los archivos esenciales en el almacenamiento local
+// Evento de Instalación: Guarda todos los simuladores y sus bancos de preguntas
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Servidor Interno: Guardando archivos de la hinchada en caché...');
+        console.log('Service Worker: Guardando simuladores y preguntas en caché...');
         return cache.addAll(ASSETS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
   );
 });
 
-// Evento de Activación: Limpia memorias viejas si actualizás la app en el futuro
+// Evento de Activación: Elimina versiones anteriores de la caché
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('Servidor Interno: Eliminando caché antigua...');
+            console.log('Service Worker: Eliminando caché antigua:', cache);
             return caches.delete(cache);
           }
         })
       );
-    })
-    .then(() => self.clients.claim())
+    }).then(() => self.clients.claim())
   );
 });
 
-// Evento Fetch: Estrategia de responder desde el almacenamiento local si no hay internet
+// Evento Fetch: Responde desde caché y guarda dinámicamente los iconos o recursos extra
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Si el archivo está en la memoria del celular, lo devuelve inmediatamente
-        if (response) {
-          return response;
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
         }
-        // Si no está (como los enlaces externos de mapas/videos), lo va a buscar a internet
-        return fetch(event.request);
-      })
+        return networkResponse;
+      });
+    })
   );
 });
